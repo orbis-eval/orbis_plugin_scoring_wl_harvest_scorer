@@ -145,7 +145,7 @@ class Main(PluginBaseClass):
                     msg += f"comp_end:   {comp_end}\n"
                     msg += f">same_end:   {gold_end == comp_end}\n"
 
-                    # """
+                    """
                     msg += f"\nSimilarity Results:\n"
 
                     levenshtein = Levenshtein.distance(
@@ -262,6 +262,7 @@ class Main(PluginBaseClass):
             entity_mapping = [False, comp_id, 0, "fp"]
             entity_mappings.append(entity_mapping)
 
+            """
             msg += "\n\nUnscored (FP)\n"
             msg += f"{42 * '#'}\n"
             msg += f"comp surface: \n{comp_surface_form}\n"
@@ -269,6 +270,7 @@ class Main(PluginBaseClass):
             msg += f"comp_type:  {comp_type}\n"
             msg += f"comp_start: {comp_start}\n"
             msg += f"comp_end:   {comp_end}\n"
+            # """
 
         return entity_mappings, computed_0, msg
 

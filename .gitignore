@@ -13,6 +13,9 @@ temp-plot.html
 *.sublime-project
 *.sublime-workspace
 
+# PyCharm
+.idea/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
