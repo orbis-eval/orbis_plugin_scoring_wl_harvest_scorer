@@ -154,11 +154,11 @@ class Main(PluginBaseClass):
                     msg += f">same_end:   {gold_end == comp_end}\n"
 
                     msg += f"\nSimilarity Results:\n"
-                    msg += f"Levenshtein: {levenshtein_score}\n"
-                    msg += f"Edit Distance: {editdistance_score}\n"
+                    # msg += f"Levenshtein: {levenshtein_score}\n"
+                    # msg += f"Edit Distance: {editdistance_score}\n"
                     msg += f"fuzzywuzzy: {fuzzy_score}\n"
-                    msg += f"jaccard: {jaccard_score}\n"
-                    msg += f"Nilsimsa: {nilsimsa_score}\n"
+                    # msg += f"jaccard: {jaccard_score}\n"
+                    # msg += f"Nilsimsa: {nilsimsa_score}\n"
                     msg += "\n"
 
                 # multiline_logging(app, states)
