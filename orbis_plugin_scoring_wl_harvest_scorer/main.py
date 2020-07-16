@@ -97,13 +97,13 @@ class Main(PluginBaseClass):
                 comp_type = comp_entry["entity_type"].lower()
                 comp_surface_form = comp_entry["surfaceForm"]
 
-                jaccard_score = self.calc_jaccard(gold_surface_form, comp_surface_form)
                 fuzzy_score = self.calc_fuzzyration(gold_surface_form, comp_surface_form)
-                levenshtein_score = self.calc_levenshtein(gold_surface_form, comp_surface_form)
-                editdistance_score = self.calc_editdistance(gold_surface_form, comp_surface_form)
-                nilsimsa_score = self.calc_nilsimsa(gold_surface_form, comp_surface_form)
+                # jaccard_score = self.calc_jaccard(gold_surface_form, comp_surface_form)
+                # levenshtein_score = self.calc_levenshtein(gold_surface_form, comp_surface_form)
+                # editdistance_score = self.calc_editdistance(gold_surface_form, comp_surface_form)
+                # nilsimsa_score = self.calc_nilsimsa(gold_surface_form, comp_surface_form)
 
-                score = jaccard_score
+                score = fuzzy_score
 
                 states = {
                     "same_url": gold_url == comp_url,
