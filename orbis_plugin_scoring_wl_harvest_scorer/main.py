@@ -12,6 +12,7 @@ import editdistance
 from sklearn import metrics
 from nilsimsa import Nilsimsa
 from nilsimsa import compare_digests
+from sklearn.feature_extraction.text import CountVectorizer
 from datetime import datetime
 
 from .conditions import conditions
@@ -96,6 +97,14 @@ class Main(PluginBaseClass):
                 comp_type = comp_entry["entity_type"].lower()
                 comp_surface_form = comp_entry["surfaceForm"]
 
+                jaccard_score = self.calc_jaccard(gold_surface_form, comp_surface_form)
+                fuzzy_score = self.calc_fuzzyration(gold_surface_form, comp_surface_form)
+                levenshtein_score = self.calc_levenshtein(gold_surface_form, comp_surface_form)
+                editdistance_score = self.calc_editdistance(gold_surface_form, comp_surface_form)
+                nilsimsa_score = self.calc_nilsimsa(gold_surface_form, comp_surface_form)
+
+                score = jaccard_score
+
                 states = {
                     "same_url": gold_url == comp_url,
                     "same_type": gold_type == comp_type,
@@ -103,7 +112,7 @@ class Main(PluginBaseClass):
                     "same_start": gold_start == comp_start,
                     "same_end": gold_end == comp_end,
                     "overlap": gold_end >= comp_start and gold_start <= comp_end,
-                    "similarity": fuzz.ratio(gold_surface_form, comp_surface_form)
+                    "similarity": score
                 }
 
                 best_condition = all([
@@ -111,13 +120,12 @@ class Main(PluginBaseClass):
                     states['same_type'],
                     states['same_surface_form'],
                     states['same_start'],
-                    states['same_end'],
+                    states['same_end']
                 ])
 
                 min_condition = all([
                     states['same_url'],
                     states['same_type'],
-                    # states['similarity'] >= 90,
                     states['overlap']
                 ])
 
@@ -127,7 +135,7 @@ class Main(PluginBaseClass):
                     msg += "\n"
                     msg += f"gold surface: \n{gold_surface_form}\n"
                     msg += f"comp surface: \n{comp_surface_form}\n"
-                    msg += f">Similarity: {fuzz.ratio(gold_surface_form, comp_surface_form)}\n"
+                    msg += f">Similarity: {states['similarity']}\n"
                     msg += "\n"
                     msg += f"gold_url:   {gold_url}\n"
                     msg += f"comp_url:   {comp_url}\n"
@@ -145,54 +153,18 @@ class Main(PluginBaseClass):
                     msg += f"comp_end:   {comp_end}\n"
                     msg += f">same_end:   {gold_end == comp_end}\n"
 
-                    """
                     msg += f"\nSimilarity Results:\n"
-
-                    levenshtein = Levenshtein.distance(
-                        gold_surface_form, comp_surface_form)
-                    msg += f"Levenshtein: {levenshtein}\n"
-
-                    edit = editdistance.eval(
-                        gold_surface_form, comp_surface_form)
-                    msg += f"Edit Distance: {edit}\n"
-
-                    fuzzy = fuzz.ratio(gold_surface_form, comp_surface_form)
-                    msg += f"fuzzywuzzy: {fuzzy}\n"
-
-                    gold_split = gold_surface_form.split()
-                    comp_split = comp_surface_form.split()
-
-                    if len(gold_split) != len(comp_split):
-                        print("-----------------")
-                        print("Before:")
-                        print(f"gold length: {len(gold_split)}")
-                        print(f"comp length: {len(comp_split)}")
-
-                        diff = len(gold_split) - len(comp_split)
-                        print(f"Diff: {diff} ({diff * -1})")
-
-                        if diff < 0:
-                            gold_split += ["" for i in range(diff * -1)]
-                        elif diff > 0:
-                            comp_split += ["" for i in range(diff)]
-
-                        print("After:")
-                        print(f"gold length: {len(gold_split)}")
-                        print(f"comp length: {len(comp_split)}")
-                        print("-----------------")
-
-                    jaccard = metrics.jaccard_score(gold_split, comp_split, average=None)
-                    msg += f"jaccard: {jaccard}\n"
-
-                    nil_0 = Nilsimsa(gold_surface_form)
-                    nil_1 = Nilsimsa(comp_surface_form)
-                    nil = compare_digests(nil_0.hexdigest(), nil_1.hexdigest())
-                    msg += f"Nilsimsa: {nil}\n"
+                    msg += f"Levenshtein: {levenshtein_score}\n"
+                    msg += f"Edit Distance: {editdistance_score}\n"
+                    msg += f"fuzzywuzzy: {fuzzy_score}\n"
+                    msg += f"jaccard: {jaccard_score}\n"
+                    msg += f"Nilsimsa: {nilsimsa_score}\n"
                     msg += "\n"
-                    # """
 
                 # multiline_logging(app, states)
                 if best_condition:
+                    # entity_mapping = [gold_id, False, 0, "fn"]
+
                     msg += "Score: +1 (all conditions met)\n"
                     comp_id = f"{comp_start},{comp_end}"
                     entity_mapping[1] = comp_id
@@ -203,11 +175,12 @@ class Main(PluginBaseClass):
                     break
                 elif min_condition:
                     # score = self.calc_score(states)
-                    score = (states['similarity'] / 100)
+                    # score = (states['similarity'] / 100)
+                    score = (states['similarity'])
                     msg += f"Score: +{score} (FuzzyWuzzy similarity based)\n"
                     comp_id = f"{comp_start},{comp_end}"
                     entity_mapping[1] = comp_id
-                    entity_mapping[2] += (states['similarity'] / 100)
+                    entity_mapping[2] += score
                     entity_mapping[3] = states
                     gold_0.remove(gold_entry)
                     computed_0.remove(comp_entry)
@@ -218,6 +191,32 @@ class Main(PluginBaseClass):
             entity_mappings.append(entity_mapping)
 
         return entity_mappings, gold_0, computed_0, msg
+
+    def calc_nilsimsa(self, gold_surface_form, comp_surface_form):
+        nil_0 = Nilsimsa(gold_surface_form)
+        nil_1 = Nilsimsa(comp_surface_form)
+        nil = compare_digests(nil_0.hexdigest(), nil_1.hexdigest())
+        return nil
+
+    def calc_editdistance(self, gold_surface_form, comp_surface_form):
+        return editdistance.eval(gold_surface_form, comp_surface_form)
+
+    def calc_levenshtein(self, gold_surface_form, comp_surface_form):
+        return Levenshtein.distance(gold_surface_form, comp_surface_form)
+
+    def calc_fuzzyration(self, gold_surface_form, comp_surface_form):
+        return fuzz.ratio(gold_surface_form, comp_surface_form)
+
+    def calc_jaccard(self, gold_surface_form, comp_surface_form):
+        vectorizer = CountVectorizer(lowercase=False)
+        vectorizer.fit([gold_surface_form, comp_surface_form])
+
+        gold_vector = vectorizer.transform([gold_surface_form]).toarray().tolist()[0]
+        comp_vector = vectorizer.transform([comp_surface_form]).toarray().tolist()[0]
+
+        # jaccard = metrics.jaccard_score(gold_vector, comp_vector, average=None)
+        jaccard = metrics.jaccard_similarity_score(gold_vector, comp_vector)
+        return jaccard
 
     def calc_score(self, states):
         """
@@ -288,9 +287,9 @@ class Main(PluginBaseClass):
         """
 
         confusion_matrix = {
-            "tp": [],
-            "fp": [],
-            "fn": [],
+            "tp": [1],
+            "fp": [0],
+            "fn": [0],
             "tp_ids": [],
             "fp_ids": [],
             "fn_ids": [],
