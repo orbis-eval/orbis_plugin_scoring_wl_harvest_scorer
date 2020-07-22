@@ -97,13 +97,12 @@ class Main(PluginBaseClass):
                 comp_type = comp_entry["entity_type"].lower()
                 comp_surface_form = comp_entry["surfaceForm"]
 
-                fuzzy_score = self.calc_fuzzyration(gold_surface_form, comp_surface_form)
-                # jaccard_score = self.calc_jaccard(gold_surface_form, comp_surface_form)
-                # levenshtein_score = self.calc_levenshtein(gold_surface_form, comp_surface_form)
-                # editdistance_score = self.calc_editdistance(gold_surface_form, comp_surface_form)
-                # nilsimsa_score = self.calc_nilsimsa(gold_surface_form, comp_surface_form)
+                score = self.calc_fuzzyration(gold_surface_form, comp_surface_form)
+                # score = self.calc_jaccard(gold_surface_form, comp_surface_form)
+                # score = self.calc_levenshtein(gold_surface_form, comp_surface_form)
+                # score = self.calc_editdistance(gold_surface_form, comp_surface_form)
+                # score = self.calc_nilsimsa(gold_surface_form, comp_surface_form)
 
-                score = fuzzy_score
 
                 states = {
                     "same_url": gold_url == comp_url,
@@ -156,7 +155,7 @@ class Main(PluginBaseClass):
                     msg += f"\nSimilarity Results:\n"
                     # msg += f"Levenshtein: {levenshtein_score}\n"
                     # msg += f"Edit Distance: {editdistance_score}\n"
-                    msg += f"fuzzywuzzy: {fuzzy_score}\n"
+                    msg += f"fuzzywuzzy: {score}\n"
                     # msg += f"jaccard: {jaccard_score}\n"
                     # msg += f"Nilsimsa: {nilsimsa_score}\n"
                     msg += "\n"
@@ -205,7 +204,7 @@ class Main(PluginBaseClass):
         return Levenshtein.distance(gold_surface_form, comp_surface_form)
 
     def calc_fuzzyration(self, gold_surface_form, comp_surface_form):
-        return fuzz.ratio(gold_surface_form, comp_surface_form)
+        return fuzz.ratio(gold_surface_form, comp_surface_form) / 100
 
     def calc_jaccard(self, gold_surface_form, comp_surface_form):
         vectorizer = CountVectorizer(lowercase=False)
@@ -287,9 +286,9 @@ class Main(PluginBaseClass):
         """
 
         confusion_matrix = {
-            "tp": [1],
-            "fp": [0],
-            "fn": [0],
+            "tp": [],
+            "fp": [],
+            "fn": [],
             "tp_ids": [],
             "fp_ids": [],
             "fn_ids": [],
@@ -302,7 +301,7 @@ class Main(PluginBaseClass):
 
             if gold and comp:
                 # logger.debug("TP: Gold: {}; Comp: {}; ({})".format(gold, comp, num))
-                confusion_matrix["tp"].append(1)
+                confusion_matrix["tp"].append(num)
                 confusion_matrix["fp"].append(0)
                 confusion_matrix["fn"].append(0)
                 confusion_matrix["tp_ids"].append(comp)
