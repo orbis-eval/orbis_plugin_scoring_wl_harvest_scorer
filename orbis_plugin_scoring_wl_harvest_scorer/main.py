@@ -5,26 +5,24 @@ Attributes:
     logger (TYPE): Description
 """
 
+import logging
+from datetime import datetime
 from operator import itemgetter
+
 import Levenshtein
-from fuzzywuzzy import fuzz
 import editdistance
-from sklearn import metrics
+from fuzzywuzzy import fuzz
 from nilsimsa import Nilsimsa
 from nilsimsa import compare_digests
+from sklearn import metrics
 from sklearn.feature_extraction.text import CountVectorizer
-from datetime import datetime
-
-from .conditions import conditions
 
 from orbis_eval.core.base import PluginBaseClass
 
-import logging
 logger = logging.getLogger(__name__)
 
 
 class Main(PluginBaseClass):
-
     """Summary
     """
 
@@ -102,7 +100,6 @@ class Main(PluginBaseClass):
                 # score = self.calc_levenshtein(gold_surface_form, comp_surface_form)
                 # score = self.calc_editdistance(gold_surface_form, comp_surface_form)
                 # score = self.calc_nilsimsa(gold_surface_form, comp_surface_form)
-
 
                 states = {
                     "same_url": gold_url == comp_url,
@@ -249,7 +246,6 @@ class Main(PluginBaseClass):
         """
 
         for comp_entry in sorted(computed_0, key=itemgetter("document_start")):
-
             comp_start = int(comp_entry["document_start"])
             comp_end = int(comp_entry["document_end"])
             comp_url = comp_entry["key"]
@@ -302,7 +298,7 @@ class Main(PluginBaseClass):
             if gold and comp:
                 # logger.debug("TP: Gold: {}; Comp: {}; ({})".format(gold, comp, num))
                 confusion_matrix["tp"].append(num)
-                confusion_matrix["fp"].append(0)
+                confusion_matrix["fp"].append(1 - num)
                 confusion_matrix["fn"].append(0)
                 confusion_matrix["tp_ids"].append(comp)
 
