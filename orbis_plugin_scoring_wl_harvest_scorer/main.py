@@ -204,14 +204,18 @@ class Main(PluginBaseClass):
         return fuzz.ratio(gold_surface_form, comp_surface_form) / 100
 
     def calc_jaccard(self, gold_surface_form, comp_surface_form):
-        vectorizer = CountVectorizer(lowercase=False)
-        vectorizer.fit([gold_surface_form, comp_surface_form])
+        try:
+            vectorizer = CountVectorizer(lowercase=False)
+            vectorizer.fit([gold_surface_form, comp_surface_form])
 
-        gold_vector = vectorizer.transform([gold_surface_form]).toarray().tolist()[0]
-        comp_vector = vectorizer.transform([comp_surface_form]).toarray().tolist()[0]
+            gold_vector = vectorizer.transform([gold_surface_form]).toarray().tolist()[0]
+            comp_vector = vectorizer.transform([comp_surface_form]).toarray().tolist()[0]
 
-        # jaccard = metrics.jaccard_score(gold_vector, comp_vector, average=None)
-        jaccard = metrics.jaccard_similarity_score(gold_vector, comp_vector)
+            # jaccard = metrics.jaccard_score(gold_vector, comp_vector, average=None)
+            jaccard = metrics.jaccard_similarity_score(gold_vector, comp_vector)
+        except ValueError:
+            logger.warning(f"Could not calculate jaccard for gold [{gold_surface_form}] computed [{comp_surface_form}]")
+            jaccard = 0
         return jaccard
 
     def calc_score(self, states):
