@@ -1,0 +1,5 @@
+python-Levenshtein
+editdistance
+fuzzywuzzy
+nilsimsa
+sklearn
