@@ -82,7 +82,6 @@ class Main(PluginBaseClass):
             gold_end = int(gold_entry["end"])
             gold_id = "{},{}".format(gold_start, gold_end)
             gold_url = gold_entry["key"]
-            gold_doc_id = gold_entry["id"]
             gold_type = gold_entry["entity_type"].lower()
             gold_surface_form = gold_entry["surfaceForm"]
             entity_mapping = [gold_id, False, 0, "fn"]
@@ -91,7 +90,6 @@ class Main(PluginBaseClass):
                 comp_start = int(comp_entry["document_start"])
                 comp_end = int(comp_entry["document_end"])
                 comp_url = comp_entry["key"]
-                comp_doc_id = comp_entry["key"]
                 comp_type = comp_entry["entity_type"].lower()
                 comp_surface_form = comp_entry["surfaceForm"]
 
