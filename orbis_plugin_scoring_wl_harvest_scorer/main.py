@@ -31,13 +31,14 @@ class Main(PluginBaseClass):
         """
         super(Main, self).__init__()
 
-    def run(self, computed, gold, scorer_condition):
+    def run(self, computed, gold, scorer_condition, use_annotations_for_scoring):
         """Summary
 
         Args:
             computed (TYPE): Description
             gold (TYPE): Description
             scorer_condition (TYPE): Description
+            use_annotations_for_scoring (bool): Parameter if the annotations should be used for scoring.
 
         Returns:
             TYPE: Description
@@ -52,7 +53,7 @@ class Main(PluginBaseClass):
 
         msg = f"Harvest Evaluation Results ({datetime.now()})"
         entity_mappings, gold_0, computed_0, msg = self.get_scored(
-            entity_mappings, gold_0, computed_0, scorer_condition, msg)
+            entity_mappings, gold_0, computed_0, scorer_condition, msg, use_annotations_for_scoring)
         entity_mappings, computed_0, msg = self.get_unscored(
             entity_mappings, computed_0, msg)
         confusion_matrix = self.get_confusion_matrix(entity_mappings)
@@ -64,7 +65,7 @@ class Main(PluginBaseClass):
 
         return confusion_matrix
 
-    def get_scored(self, entity_mappings, gold_0, computed_0, scorer_condition, msg):
+    def get_scored(self, entity_mappings, gold_0, computed_0, scorer_condition, msg, use_annotations_for_scoring):
         """Summary
 
         Args:
@@ -102,6 +103,7 @@ class Main(PluginBaseClass):
                 states = {
                     "same_url": gold_url == comp_url,
                     "same_type": gold_type == comp_type,
+                    "same_annotations": self._has_same_annotations(gold_entry, comp_entry, use_annotations_for_scoring),
                     "same_surface_form": gold_surface_form == comp_surface_form,
                     "same_start": gold_start == comp_start,
                     "same_end": gold_end == comp_end,
@@ -112,6 +114,7 @@ class Main(PluginBaseClass):
                 best_condition = all([
                     states['same_url'],
                     states['same_type'],
+                    states['same_annotations'],
                     states['same_surface_form'],
                     states['same_start'],
                     states['same_end']
@@ -120,6 +123,7 @@ class Main(PluginBaseClass):
                 min_condition = all([
                     states['same_url'],
                     states['same_type'],
+                    states['same_annotations'],
                     states['overlap']
                 ])
 
@@ -185,6 +189,11 @@ class Main(PluginBaseClass):
             entity_mappings.append(entity_mapping)
 
         return entity_mappings, gold_0, computed_0, msg
+
+    def _has_same_annotations(self, gold_entry, comp_entry, use_annotations_for_scoring):
+        if use_annotations_for_scoring:
+            return gold_entry['annotations'] == comp_entry['annotations']
+        return True
 
     def calc_nilsimsa(self, gold_surface_form, comp_surface_form):
         nil_0 = Nilsimsa(gold_surface_form)
